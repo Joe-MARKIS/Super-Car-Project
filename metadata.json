@@ -1,0 +1,6 @@
+{
+  "name": "AutoForward - Marketplace Export & Vente de Véhicules",
+  "description": "Plateforme e-commerce leader d'exportation et vente de véhicules d'occasion avec devis CIF en direct, sélection par pays, recherche avancée et support multilingue.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

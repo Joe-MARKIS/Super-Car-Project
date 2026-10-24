@@ -1,0 +1,452 @@
+<!-- ============================================== -->
+<!-- DEDICATED FULL-SCREEN MOBILE VEHICLE DETAIL PAGE -->
+<!-- (Matching user screenshots IMG_4060 - IMG_4073 for small screens) -->
+<!-- ============================================== -->
+@if (vehicleService.isModalOpen() && vehicleService.selectedVehicle()) {
+  <div class="block lg:hidden fixed inset-0 z-50 overflow-y-auto bg-[#F4F4F6]">
+    <app-mobile-vehicle-detail />
+  </div>
+}
+
+<!-- ============================================== -->
+<!-- 1. MOBILE SITE VIEW (Images 3997 - 4009) -->
+<!-- Rendered if viewMode is 'mobile' -->
+<!-- ============================================== -->
+@if (viewMode.mode() === 'mobile') {
+  @if (vehicleService.isModalOpen() && vehicleService.selectedVehicle()) {
+    <app-mobile-vehicle-detail />
+  } @else {
+    <app-mobile-view />
+  }
+} @else if (vehicleService.activePage() === 'model-vehicles') {
+  <app-top-promo-banner />
+  <app-header />
+  <app-special-announces />
+  <app-model-vehicles-page />
+  <app-footer />
+} @else if (viewMode.mode() === 'pc') {
+  <!-- ============================================== -->
+  <!-- 2. DESKTOP / PC SITE VIEW (3 COLUMNS) -->
+  <!-- Promotional banner above header, header, then special announces underneath -->
+  <!-- ============================================== -->
+  <app-top-promo-banner />
+  <app-header />
+  <app-special-announces />
+
+  <main class="max-w-[1600px] mx-auto px-2 sm:px-4 py-3">
+    <!-- 3-COLUMNS BODY LAYOUT (Matching user screenshot) -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-3.5 items-start">
+      <!-- COLONNE 1 (GAUCHE) : Filtres, Marques, Prix, Réductions -->
+      <aside class="lg:col-span-3 xl:col-span-2 space-y-3.5">
+        <app-sidebar />
+      </aside>
+
+      <!-- COLONNE 2 (CENTRE) : 13 Sections demandées par l'utilisateur -->
+      <section class="lg:col-span-6 xl:col-span-7 min-w-0 space-y-4">
+        <!-- 1. Recherche et filtres -->
+        <app-search-filter-box />
+
+        <!-- 2. Pubs -->
+        <app-promo-banner />
+
+        <!-- 3. Recommended for you -->
+        <app-car-showcase-row
+          [title]="lang.t('recommendedForYouTitle')"
+          [vehicles]="vehicleService.recommendedForYouVehicles()"
+          icon="auto_awesome"
+          [limit]="5"
+        />
+
+        <!-- 4. Consulter récemment -->
+        @if (vehicleService.recentlyViewedVehicles().length > 0) {
+          <app-car-showcase-row
+            [title]="lang.t('recentlyViewedTitle')"
+            [vehicles]="vehicleService.recentlyViewedVehicles()"
+            icon="history"
+            [limit]="5"
+          />
+        }
+
+        <!-- 5. Véhicules avec reward points -->
+        <app-car-showcase-row
+          [title]="lang.t('pointsRewardTitle')"
+          [vehicles]="vehicleService.specialRewardVehicles()"
+          icon="loyalty"
+          [limit]="5"
+        />
+
+        <!-- 6. Top vente dans "Le pays choisi par le user" -->
+        <app-car-showcase-row
+          [title]="lang.t('topCountryPrefix') + ' ' + lang.selectedCountry().name"
+          [vehicles]="vehicleService.topDrcVehicles()"
+          icon="trending_up"
+          [showRank]="true"
+          [limit]="5"
+        />
+
+        <!-- 7. Recommended from dubai to "Le pays choisi par le user" -->
+        <app-car-showcase-row
+          [title]="lang.t('recommendedDubaiPrefix') + ' ' + lang.selectedCountry().name"
+          [vehicles]="vehicleService.recommendedDubaiVehicles()"
+          icon="flight_takeoff"
+          [showRank]="true"
+          [limit]="5"
+        />
+
+        <!-- 8. Popular left hand drive models in "Le pays choisi par le user" -->
+        <app-car-showcase-row
+          [title]="lang.t('popularLhdPrefix') + ' ' + lang.selectedCountry().name"
+          [vehicles]="vehicleService.popularLhdVehicles()"
+          icon="pan_tool"
+          [showRank]="true"
+          [limit]="5"
+        />
+
+        <!-- 9. Catalogue et le bouton "Voir plus" -->
+        <app-catalog-tabs />
+
+        <section id="catalog-grid" class="bg-white rounded border border-zinc-200 p-3.5 shadow-xs">
+          <!-- Grid Header -->
+          <div class="flex flex-wrap items-center justify-between pb-2.5 mb-3 border-b border-zinc-200 gap-2">
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 bg-red-600 rounded-xs"></span>
+              <h2 class="text-xs md:text-sm font-black text-zinc-900 uppercase tracking-tight">
+                Catalogue Principal des Véhicules
+              </h2>
+              <span class="bg-zinc-100 text-zinc-800 text-[11px] font-mono font-bold px-2 py-0.5 rounded border border-zinc-200">
+                {{ vehicleService.filteredVehicles().length }} {{ lang.t('itemsMatch') }}
+              </span>
+            </div>
+
+            <div class="flex items-center gap-2 text-xs">
+              @if (vehicleService.hasActiveFilters()) {
+                <button
+                  type="button"
+                  (click)="vehicleService.resetFilter()"
+                  class="text-red-600 hover:text-red-800 font-bold flex items-center gap-1 cursor-pointer bg-red-50 hover:bg-red-100 px-2 py-1 rounded text-xs"
+                >
+                  <mat-icon class="text-xs scale-75">clear</mat-icon>
+                  <span>Effacer les filtres</span>
+                </button>
+              }
+            </div>
+          </div>
+
+          <!-- Vehicle Cards Grid (Paginated) -->
+          @if (vehicleService.paginatedCatalogVehicles().length > 0) {
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-5 gap-2.5">
+              @for (veh of vehicleService.paginatedCatalogVehicles(); track veh.id) {
+                <app-vehicle-card [vehicle]="veh" />
+              }
+            </div>
+
+            <!-- Bouton "Voir plus" (Section 9) -->
+            @if (vehicleService.catalogVisibleLimit() < vehicleService.filteredVehicles().length) {
+              <div class="mt-4 pt-3 border-t border-zinc-200 text-center flex flex-wrap items-center justify-center gap-3">
+                <button
+                  type="button"
+                  (click)="vehicleService.loadMoreCatalog()"
+                  class="bg-red-600 hover:bg-red-700 text-white font-extrabold px-6 py-2.5 rounded shadow-sm hover:shadow transition-all text-xs flex items-center gap-1.5 cursor-pointer uppercase tracking-wider"
+                >
+                  <mat-icon class="text-sm">add_circle_outline</mat-icon>
+                  <span>{{ lang.t('loadMoreVehicles') }} (+10)</span>
+                </button>
+                <button
+                  type="button"
+                  (click)="vehicleService.showAllCatalog()"
+                  class="bg-zinc-900 hover:bg-black text-white font-bold px-4 py-2.5 rounded transition-all text-xs flex items-center gap-1 cursor-pointer"
+                >
+                  <span>{{ lang.t('showAllVehicles') }} ({{ vehicleService.filteredVehicles().length }})</span>
+                </button>
+              </div>
+            }
+          } @else {
+            <div class="py-12 text-center text-zinc-500">
+              <mat-icon class="text-4xl text-zinc-300 mb-1">directions_car</mat-icon>
+              <h3 class="font-bold text-sm text-zinc-800">Aucun véhicule ne correspond à ces critères</h3>
+              <p class="text-xs text-zinc-500 mt-0.5 max-w-sm mx-auto">
+                Essayez d'élargir votre recherche en réinitialisant les filtres.
+              </p>
+              <button
+                type="button"
+                (click)="vehicleService.resetFilter()"
+                class="mt-3 bg-[#DC2626] hover:bg-[#B91C1C] text-white px-3.5 py-1.5 rounded text-xs font-bold transition-colors cursor-pointer"
+              >
+                Voir tous les véhicules
+              </button>
+            </div>
+          }
+        </section>
+
+        <!-- 10. Meilleurs vendeurs par catégorie dans "Le pays choisi par le user" -->
+        <app-best-sellers-category />
+
+        <!-- 11. Voitures japonaises d'occasion populaires dans "Le pays choisi par le user" -->
+        <app-popular-japanese-cars />
+
+        <!-- 12. Purchase flow -->
+        <app-purchase-flow />
+
+        <!-- 13. Recherches et revues -->
+        <app-reviews />
+
+        <!-- FAQ -->
+        <app-faq />
+      </section>
+
+      <!-- COLONNE 3 (DROITE) : Shipping Schedule, Create Account, Pièces, Services RDC, Réseaux, CAP Tracker -->
+      <aside class="lg:col-span-3 xl:col-span-3 space-y-3.5">
+        <app-right-sidebar />
+      </aside>
+    </div>
+  </main>
+
+  <app-footer />
+} @else {
+  <!-- ============================================== -->
+  <!-- 3. AUTO / RESPONSIVE VIEW (Default) -->
+  <!-- Mobile layout on small screens, Desktop 3-column layout on lg screens -->
+  <!-- ============================================== -->
+  <div class="block lg:hidden">
+    @if (vehicleService.isModalOpen() && vehicleService.selectedVehicle()) {
+      <app-mobile-vehicle-detail />
+    } @else {
+      <app-mobile-view />
+    }
+  </div>
+
+  <div class="hidden lg:block">
+    <app-top-promo-banner />
+    <app-header />
+    <app-special-announces />
+
+    <main class="max-w-[1600px] mx-auto px-2 sm:px-4 py-3">
+      <!-- 3-COLUMNS BODY LAYOUT -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-3.5 items-start">
+        <!-- COLONNE 1 (GAUCHE) -->
+        <aside class="lg:col-span-3 xl:col-span-2 space-y-3.5">
+          <app-sidebar />
+        </aside>
+
+        <!-- COLONNE 2 (CENTRE) : 13 Sections demandées par l'utilisateur -->
+        <section class="lg:col-span-6 xl:col-span-7 min-w-0 space-y-4">
+          <!-- 1. Recherche et filtres -->
+          <app-search-filter-box />
+
+          <!-- 2. Pubs -->
+          <app-promo-banner />
+
+          <!-- 3. Recommended for you -->
+          <app-car-showcase-row
+            [title]="lang.t('recommendedForYouTitle')"
+            [vehicles]="vehicleService.recommendedForYouVehicles()"
+            icon="auto_awesome"
+            [limit]="5"
+          />
+
+          <!-- 4. Consulter récemment -->
+          @if (vehicleService.recentlyViewedVehicles().length > 0) {
+            <app-car-showcase-row
+              [title]="lang.t('recentlyViewedTitle')"
+              [vehicles]="vehicleService.recentlyViewedVehicles()"
+              icon="history"
+              [limit]="5"
+            />
+          }
+
+          <!-- 5. Véhicules avec reward points -->
+          <app-car-showcase-row
+            [title]="lang.t('pointsRewardTitle')"
+            [vehicles]="vehicleService.specialRewardVehicles()"
+            icon="loyalty"
+            [limit]="5"
+          />
+
+          <!-- 6. Top vente dans "Le pays choisi par le user" -->
+          <app-car-showcase-row
+            [title]="lang.t('topCountryPrefix') + ' ' + lang.selectedCountry().name"
+            [vehicles]="vehicleService.topDrcVehicles()"
+            icon="trending_up"
+            [showRank]="true"
+            [limit]="5"
+          />
+
+          <!-- 7. Recommended from dubai to "Le pays choisi par le user" -->
+          <app-car-showcase-row
+            [title]="lang.t('recommendedDubaiPrefix') + ' ' + lang.selectedCountry().name"
+            [vehicles]="vehicleService.recommendedDubaiVehicles()"
+            icon="flight_takeoff"
+            [showRank]="true"
+            [limit]="5"
+          />
+
+          <!-- 8. Popular left hand drive models in "Le pays choisi par le user" -->
+          <app-car-showcase-row
+            [title]="lang.t('popularLhdPrefix') + ' ' + lang.selectedCountry().name"
+            [vehicles]="vehicleService.popularLhdVehicles()"
+            icon="pan_tool"
+            [showRank]="true"
+            [limit]="5"
+          />
+
+          <!-- 9. Catalogue et le bouton "Voir plus" -->
+          <app-catalog-tabs />
+
+          <section id="catalog-grid" class="bg-white rounded border border-zinc-200 p-3.5 shadow-xs">
+            <!-- Grid Header -->
+            <div class="flex flex-wrap items-center justify-between pb-2.5 mb-3 border-b border-zinc-200 gap-2">
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 bg-red-600 rounded-xs"></span>
+                <h2 class="text-xs md:text-sm font-black text-zinc-900 uppercase tracking-tight">
+                  Catalogue Principal des Véhicules
+                </h2>
+                <span class="bg-zinc-100 text-zinc-800 text-[11px] font-mono font-bold px-2 py-0.5 rounded border border-zinc-200">
+                  {{ vehicleService.filteredVehicles().length }} {{ lang.t('itemsMatch') }}
+                </span>
+              </div>
+
+              <div class="flex items-center gap-2 text-xs">
+                @if (vehicleService.hasActiveFilters()) {
+                  <button
+                    type="button"
+                    (click)="vehicleService.resetFilter()"
+                    class="text-red-600 hover:text-red-800 font-bold flex items-center gap-1 cursor-pointer bg-red-50 hover:bg-red-100 px-2 py-1 rounded text-xs"
+                  >
+                    <mat-icon class="text-xs scale-75">clear</mat-icon>
+                    <span>Effacer les filtres</span>
+                  </button>
+                }
+              </div>
+            </div>
+
+            <!-- Vehicle Cards Grid (Paginated) -->
+            @if (vehicleService.paginatedCatalogVehicles().length > 0) {
+              <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-5 gap-2.5">
+                @for (veh of vehicleService.paginatedCatalogVehicles(); track veh.id) {
+                  <app-vehicle-card [vehicle]="veh" />
+                }
+              </div>
+
+              <!-- Bouton "Voir plus" (Section 9) -->
+              @if (vehicleService.catalogVisibleLimit() < vehicleService.filteredVehicles().length) {
+                <div class="mt-4 pt-3 border-t border-zinc-200 text-center flex flex-wrap items-center justify-center gap-3">
+                  <button
+                    type="button"
+                    (click)="vehicleService.loadMoreCatalog()"
+                    class="bg-red-600 hover:bg-red-700 text-white font-extrabold px-6 py-2.5 rounded shadow-sm hover:shadow transition-all text-xs flex items-center gap-1.5 cursor-pointer uppercase tracking-wider"
+                  >
+                    <mat-icon class="text-sm">add_circle_outline</mat-icon>
+                    <span>{{ lang.t('loadMoreVehicles') }} (+10)</span>
+                  </button>
+                  <button
+                    type="button"
+                    (click)="vehicleService.showAllCatalog()"
+                    class="bg-zinc-900 hover:bg-black text-white font-bold px-4 py-2.5 rounded transition-all text-xs flex items-center gap-1 cursor-pointer"
+                  >
+                    <span>{{ lang.t('showAllVehicles') }} ({{ vehicleService.filteredVehicles().length }})</span>
+                  </button>
+                </div>
+              }
+            } @else {
+              <div class="py-12 text-center text-zinc-500">
+                <mat-icon class="text-4xl text-zinc-300 mb-1">directions_car</mat-icon>
+                <h3 class="font-bold text-sm text-zinc-800">Aucun véhicule ne correspond à ces critères</h3>
+                <p class="text-xs text-zinc-500 mt-0.5 max-w-sm mx-auto">
+                  Essayez d'élargir votre recherche en réinitialisant les filtres.
+                </p>
+                <button
+                  type="button"
+                  (click)="vehicleService.resetFilter()"
+                  class="mt-3 bg-[#DC2626] hover:bg-[#B91C1C] text-white px-3.5 py-1.5 rounded text-xs font-bold transition-colors cursor-pointer"
+                >
+                  Voir tous les véhicules
+                </button>
+              </div>
+            }
+          </section>
+
+          <!-- 10. Meilleurs vendeurs par catégorie dans "Le pays choisi par le user" -->
+          <app-best-sellers-category />
+
+          <!-- 11. Voitures japonaises d'occasion populaires dans "Le pays choisi par le user" -->
+          <app-popular-japanese-cars />
+
+          <!-- 12. Purchase flow -->
+          <app-purchase-flow />
+
+          <!-- 13. Recherches et revues -->
+          <app-reviews />
+
+          <!-- FAQ -->
+          <app-faq />
+        </section>
+
+        <!-- COLONNE 3 (DROITE) -->
+        <aside class="lg:col-span-3 xl:col-span-3 space-y-3.5">
+          <app-right-sidebar />
+        </aside>
+      </div>
+    </main>
+
+    <app-footer />
+  </div>
+}
+
+<!-- Modals & Global Live Chat (shared across mobile and PC) -->
+<app-vehicle-modal />
+<app-quote-modal />
+<app-favorites-modal />
+<app-auth-modal />
+<app-admin-panel />
+<app-price-alert-modal />
+<app-support-chat />
+
+<!-- Global In-App Toast Notification (Price Drop Alerts, Bookings, Subscriptions) -->
+@if (priceAlertService.activeToast(); as toast) {
+  <div class="fixed top-4 right-4 z-50 max-w-sm w-full animate-fadeIn select-none">
+    <div
+      class="bg-zinc-900 text-white rounded-xl shadow-2xl p-4 border-2 flex items-start gap-3"
+      [class.border-red-600]="toast.type === 'drop_alert'"
+      [class.border-emerald-500]="toast.type === 'success'"
+      [class.border-blue-500]="toast.type === 'info'"
+    >
+      <div
+        class="w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5"
+        [class.bg-red-600]="toast.type === 'drop_alert'"
+        [class.bg-emerald-600]="toast.type === 'success'"
+        [class.bg-blue-600]="toast.type === 'info'"
+      >
+        <mat-icon class="scale-90 text-white">
+          {{ toast.type === 'drop_alert' ? 'trending_down' : toast.type === 'success' ? 'check' : 'info' }}
+        </mat-icon>
+      </div>
+
+      <div class="flex-1 min-w-0">
+        <h4 class="text-xs font-black text-white leading-tight">{{ toast.title }}</h4>
+        <p class="text-[11px] text-zinc-300 mt-0.5 leading-snug">{{ toast.message }}</p>
+
+        @if (toast.emailPreview; as preview) {
+          <div class="mt-2 flex items-center gap-2">
+            <button
+              type="button"
+              (click)="priceAlertService.openEmailPreview(preview)"
+              class="bg-red-600 hover:bg-red-700 text-white text-[10px] font-black px-2.5 py-1 rounded cursor-pointer uppercase tracking-wider flex items-center gap-1 shadow-xs"
+            >
+              <mat-icon class="text-xs scale-75">mark_email_read</mat-icon>
+              <span>Voir l'email reçu</span>
+            </button>
+          </div>
+        }
+      </div>
+
+      <button
+        type="button"
+        (click)="priceAlertService.dismissToast()"
+        class="text-zinc-400 hover:text-white p-1 cursor-pointer"
+      >
+        <mat-icon class="scale-75">close</mat-icon>
+      </button>
+    </div>
+  </div>
+}
+
